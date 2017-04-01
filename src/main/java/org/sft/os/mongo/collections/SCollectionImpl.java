@@ -7,8 +7,10 @@ import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
+import org.sft.os.mongo.codecs.MongoCodec;
 
 import java.util.List;
 
@@ -18,8 +20,9 @@ import java.util.List;
 public class SCollectionImpl<TDocument> implements SCollection<TDocument> {
     private MongoCollection<TDocument> mongoCollection;
 
-    public SCollectionImpl(MongoCollection<TDocument> mongoCollection) {
+    public SCollectionImpl(MongoCollection<TDocument> mongoCollection, Class<TDocument> tDocumentClass) {
         this.mongoCollection = mongoCollection;
+        mongoCollection.withCodecRegistry(CodecRegistries.fromCodecs(new MongoCodec<TDocument>(tDocumentClass)));
     }
 
     public WriteResult insertSingle(TDocument t) {
