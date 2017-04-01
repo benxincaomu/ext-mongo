@@ -41,10 +41,11 @@ public class MongoCodec<T> implements Codec<T> {
             BsonType type;
             while ((type = reader.readBsonType()) != BsonType.END_OF_DOCUMENT) {
                 String name = reader.readName();
-                Field field = clazz.getDeclaredField(name);
-                field.setAccessible(true);
+                Field field = null;
                 switch (type) {
                     case ARRAY:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         ParameterizedType pt = (ParameterizedType) field.getGenericType();
                         Class cla = (Class) pt.getActualTypeArguments()[0];
                         List list = new ArrayList();
@@ -71,39 +72,58 @@ public class MongoCodec<T> implements Codec<T> {
                         }
                         reader.readEndArray();
                         field.set(object, list);
+                        field.setAccessible(false);
                         break;
                     case DOUBLE:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, reader.readDouble());
+                        field.setAccessible(false);
                         break;
                     case STRING:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, reader.readString());
+                        field.setAccessible(false);
                         break;
                     case BOOLEAN:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, reader.readBoolean());
+                        field.setAccessible(false);
                         break;
                     case DATE_TIME:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, new Date(reader.readDateTime()));
+                        field.setAccessible(false);
                         break;
                     case INT32:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, reader.readInt32());
+                        field.setAccessible(false);
                         break;
                     case INT64:
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, reader.readInt32());
+                        field.setAccessible(false);
                         break;
                     case OBJECT_ID:
                         reader.readObjectId();
                         break;
                     case DOCUMENT:
-                        if ("_id".equals(name)) {
-                            break;
-                        }
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
                         field.set(object, decodeObject(reader, decoderContext, field.getType()));
+                        field.setAccessible(false);
                         break;
 
                     default:
                         break;
                 }
-                field.setAccessible(false);
+
             }
 
         } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
