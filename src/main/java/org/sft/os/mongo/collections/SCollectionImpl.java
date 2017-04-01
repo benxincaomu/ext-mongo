@@ -18,6 +18,10 @@ import java.util.List;
 public class SCollectionImpl<TDocument> implements SCollection<TDocument> {
     private MongoCollection<TDocument> mongoCollection;
 
+    public SCollectionImpl(MongoCollection<TDocument> mongoCollection) {
+        this.mongoCollection = mongoCollection;
+    }
+
     public WriteResult insertSingle(TDocument t) {
         return null;
     }
@@ -34,7 +38,7 @@ public class SCollectionImpl<TDocument> implements SCollection<TDocument> {
         return mongoCollection.getNamespace();
     }
 
-    public Class getDocumentClass() {
+    public Class<TDocument> getDocumentClass() {
         return mongoCollection.getDocumentClass();
     }
 
@@ -54,23 +58,23 @@ public class SCollectionImpl<TDocument> implements SCollection<TDocument> {
         return mongoCollection.getReadConcern();
     }
 
-    public MongoCollection withDocumentClass(Class clazz) {
+    public <NewTDocument> MongoCollection<NewTDocument> withDocumentClass(Class<NewTDocument> clazz) {
         return mongoCollection.withDocumentClass(clazz);
     }
 
-    public MongoCollection withCodecRegistry(CodecRegistry codecRegistry) {
+    public MongoCollection<TDocument> withCodecRegistry(CodecRegistry codecRegistry) {
         return mongoCollection.withCodecRegistry(codecRegistry);
     }
 
-    public MongoCollection withReadPreference(ReadPreference readPreference) {
+    public MongoCollection<TDocument> withReadPreference(ReadPreference readPreference) {
         return mongoCollection.withReadPreference(readPreference);
     }
 
-    public MongoCollection withWriteConcern(WriteConcern writeConcern) {
+    public MongoCollection<TDocument> withWriteConcern(WriteConcern writeConcern) {
         return mongoCollection.withWriteConcern(writeConcern);
     }
 
-    public MongoCollection withReadConcern(ReadConcern readConcern) {
+    public MongoCollection<TDocument> withReadConcern(ReadConcern readConcern) {
         return mongoCollection.withReadConcern(readConcern);
     }
 
@@ -86,47 +90,47 @@ public class SCollectionImpl<TDocument> implements SCollection<TDocument> {
         return mongoCollection.count(filter, options);
     }
 
-    public DistinctIterable distinct(String fieldName, Class aClass) {
-        return mongoCollection.distinct(fieldName, aClass);
+    public <TResult> DistinctIterable<TResult> distinct(String fieldName, Class<TResult> tResultClass) {
+        return mongoCollection.distinct(fieldName, tResultClass);
     }
 
-    public DistinctIterable distinct(String fieldName, Bson filter, Class aClass) {
+    public <TResult> DistinctIterable<TResult> distinct(String fieldName, Bson filter, Class<TResult> aClass) {
         return mongoCollection.distinct(fieldName, filter, aClass);
     }
 
-    public FindIterable find() {
+    public FindIterable<TDocument> find() {
         return mongoCollection.find();
     }
 
-    public FindIterable find(Class aClass) {
+    public <TResult> FindIterable<TResult> find(Class<TResult> aClass) {
         return mongoCollection.find(aClass);
     }
 
-    public FindIterable find(Bson filter) {
+    public FindIterable<TDocument> find(Bson filter) {
         return mongoCollection.find(filter);
     }
 
-    public FindIterable find(Bson filter, Class aClass) {
-        return mongoCollection.find(filter, aClass);
+    public <TResult> FindIterable<TResult> find(Bson filter, Class<TResult> tResultClass) {
+        return mongoCollection.find(filter, tResultClass);
     }
 
-    public AggregateIterable aggregate(List pipeline) {
+    public AggregateIterable<TDocument> aggregate(List<? extends Bson> pipeline) {
         return mongoCollection.aggregate(pipeline);
     }
 
-    public AggregateIterable aggregate(List pipeline, Class aClass) {
-        return mongoCollection.aggregate(pipeline, aClass);
+    public <TResult> AggregateIterable<TResult> aggregate(List<? extends Bson> pipeline, Class<TResult> tResultClass) {
+        return mongoCollection.aggregate(pipeline, tResultClass);
     }
 
-    public MapReduceIterable mapReduce(String mapFunction, String reduceFunction) {
+    public MapReduceIterable<TDocument> mapReduce(String mapFunction, String reduceFunction) {
         return mongoCollection.mapReduce(mapFunction, reduceFunction);
     }
 
-    public MapReduceIterable mapReduce(String mapFunction, String reduceFunction, Class aClass) {
-        return mongoCollection.mapReduce(mapFunction, reduceFunction, aClass);
+    public <TResult> MapReduceIterable<TResult> mapReduce(String mapFunction, String reduceFunction, Class<TResult> tResultClass) {
+        return mongoCollection.mapReduce(mapFunction, reduceFunction, tResultClass);
     }
 
-    public BulkWriteResult bulkWrite(List requests) {
+    public BulkWriteResult bulkWrite(List<? extends WriteModel<? extends TDocument>> requests) {
         return mongoCollection.bulkWrite(requests);
     }
 
