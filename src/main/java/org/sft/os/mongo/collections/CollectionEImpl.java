@@ -17,10 +17,10 @@ import java.util.List;
 /**
  * @author sunft
  */
-public class SCollectionImpl<TDocument> implements SCollection<TDocument> {
+public class CollectionEImpl<TDocument> implements CollectionE<TDocument> {
     private MongoCollection<TDocument> mongoCollection;
 
-    public SCollectionImpl(MongoCollection<TDocument> mongoCollection, Class<TDocument> tDocumentClass) {
+    public CollectionEImpl(MongoCollection<TDocument> mongoCollection, Class<TDocument> tDocumentClass) {
         this.mongoCollection = mongoCollection;
         mongoCollection.withCodecRegistry(CodecRegistries.fromCodecs(new MongoCodec<TDocument>(tDocumentClass)));
     }

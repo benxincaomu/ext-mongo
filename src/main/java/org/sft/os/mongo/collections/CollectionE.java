@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author sunft
  */
-public interface SCollection<TDocument> extends MongoCollection<TDocument> {
+public interface CollectionE<TDocument> extends MongoCollection<TDocument> {
     /**
      * 写入一条记录
      *
