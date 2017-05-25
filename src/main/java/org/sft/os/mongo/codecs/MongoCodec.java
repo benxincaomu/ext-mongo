@@ -15,10 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * @param <T> 要存储或读取的对象类型
  * @author sunft
  */
 public class MongoCodec<T> implements Codec<T> {
-
+    /**
+     * 要存储或读取的对象类型
+     */
     private Class<T> clazz;
 
     public MongoCodec(Class<T> clazz) {
@@ -33,6 +36,14 @@ public class MongoCodec<T> implements Codec<T> {
         return (T) decodeObject(reader, decoderContext, clazz);
     }
 
+    /**
+     * 反序列化
+     *
+     * @param reader         reader
+     * @param decoderContext decoderContext
+     * @param clazz          对应的类型
+     * @return clazz类型的的实例
+     */
     private Object decodeObject(BsonReader reader, DecoderContext decoderContext, Class clazz) {
         Object object = null;
         reader.readStartDocument();
@@ -52,7 +63,7 @@ public class MongoCodec<T> implements Codec<T> {
                         reader.readStartArray();
                         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
                             reader.getCurrentBsonType();
-                            Object obj ;
+                            Object obj;
                             if (Integer.class.isAssignableFrom(cla) || int.class.isAssignableFrom(cla)) {
                                 obj = reader.readInt32();
                             } else if (Long.class.isAssignableFrom(cla) || Long.class.isAssignableFrom(cla)) {
@@ -141,6 +152,10 @@ public class MongoCodec<T> implements Codec<T> {
     /**
      * 遍历属性，进行相应的类型写入
      * 目前做一些常用类型的判断，如有需要可以自行添加
+     *
+     * @param writer         writer
+     * @param value          要写入的对象
+     * @param encoderContext encoderContext
      */
     private void encodeObject(BsonWriter writer, Object value, EncoderContext encoderContext) {
         writer.writeStartDocument();
@@ -169,7 +184,11 @@ public class MongoCodec<T> implements Codec<T> {
     }
 
     /**
-     * 写入属性值
+     * 将属性值写入数据库
+     *
+     * @param writer         writer
+     * @param obj            属性值
+     * @param encoderContext encoderContext
      */
     private void writeValue(BsonWriter writer, Object obj, EncoderContext encoderContext) {
         if (Integer.class.isAssignableFrom(obj.getClass()) || int.class.isAssignableFrom(obj.getClass())) {

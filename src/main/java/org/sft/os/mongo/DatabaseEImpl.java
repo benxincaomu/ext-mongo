@@ -1,4 +1,4 @@
-package org.sft.os.mongo.databases;
+package org.sft.os.mongo;
 
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
@@ -12,18 +12,34 @@ import com.mongodb.client.model.CreateViewOptions;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
+import org.sft.os.mongo.codecs.ClassRegistries;
 import org.sft.os.mongo.collections.CollectionE;
-import org.sft.os.mongo.collections.CollectionEImpl;
+import org.sft.os.mongo.databases.DatabaseE;
 
 import java.util.List;
 
-
-public class DatabaseEImpl implements DatabaseE {
+/**
+ * 扩展database实现类
+ */
+class DatabaseEImpl implements DatabaseE {
+    /**
+     * 依赖MongoDatabase实现
+     */
     private MongoDatabase mongoDatabase;
 
+    /**
+     * 使用MongoDatabase进行初始化
+     *
+     * @param mongoDatabase
+     */
+    DatabaseEImpl(MongoDatabase mongoDatabase) {
+        this.mongoDatabase = mongoDatabase;
+    }
+
     @Override
-    public <TDocument> CollectionE<TDocument> getSCollection(String collectionName, Class<TDocument> clazz) {
-        return new CollectionEImpl<TDocument>(mongoDatabase.getCollection(collectionName, clazz), clazz);
+    public <TDocument> CollectionE<TDocument> getCollectionE(String collectionName, Class<TDocument> clazz) {
+        return new CollectionEImpl<TDocument>(mongoDatabase.getCollection(collectionName, clazz)
+                .withCodecRegistry(ClassRegistries.getCodecRegistry(clazz)));
     }
 
     @Override
