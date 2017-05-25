@@ -53,91 +53,84 @@ public class MongoCodec<T> implements Codec<T> {
             while ((type = reader.readBsonType()) != BsonType.END_OF_DOCUMENT) {
                 String name = reader.readName();
                 Field field = null;
-                switch (type) {
-                    case ARRAY:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        ParameterizedType pt = (ParameterizedType) field.getGenericType();
-                        Class cla = (Class) pt.getActualTypeArguments()[0];
-                        List list = new ArrayList();
-                        reader.readStartArray();
-                        while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-                            reader.getCurrentBsonType();
-                            Object obj;
-                            if (Integer.class.isAssignableFrom(cla) || int.class.isAssignableFrom(cla)) {
-                                obj = reader.readInt32();
-                            } else if (Long.class.isAssignableFrom(cla) || Long.class.isAssignableFrom(cla)) {
-                                obj = reader.readInt64();
-                            } else if (Double.class.isAssignableFrom(cla) || double.class.isAssignableFrom(cla)) {
-                                obj = reader.readDouble();
-                            } else if (Boolean.class.isAssignableFrom(cla) || boolean.class.isAssignableFrom(cla)) {
-                                obj = reader.readDouble();
-                            } else if (Date.class.isAssignableFrom(cla)) {
-                                obj = new Date(reader.readDateTime());
-                            } else if (String.class.isAssignableFrom(cla)) {
-                                obj = reader.readString();
-                            } else {
-                                obj = decodeObject(reader, decoderContext, cla);
+                Object value = null;
+                boolean isDefault = false;
+                try {
+                    switch (type) {
+                        case ARRAY:
+                            List list = new ArrayList();
+                            reader.readStartArray();
+                            field = clazz.getDeclaredField(name);
+                            field.setAccessible(true);
+                            ParameterizedType pt = (ParameterizedType) field.getGenericType();
+                            Class cla = (Class) pt.getActualTypeArguments()[0];
+                            while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
+                                reader.getCurrentBsonType();
+                                Object obj;
+                                if (Integer.class.isAssignableFrom(cla) || int.class.isAssignableFrom(cla)) {
+                                    obj = reader.readInt32();
+                                } else if (Long.class.isAssignableFrom(cla) || Long.class.isAssignableFrom(cla)) {
+                                    obj = reader.readInt64();
+                                } else if (Double.class.isAssignableFrom(cla) || double.class.isAssignableFrom(cla)) {
+                                    obj = reader.readDouble();
+                                } else if (Boolean.class.isAssignableFrom(cla) || boolean.class.isAssignableFrom(cla)) {
+                                    obj = reader.readDouble();
+                                } else if (Date.class.isAssignableFrom(cla)) {
+                                    obj = new Date(reader.readDateTime());
+                                } else if (String.class.isAssignableFrom(cla)) {
+                                    obj = reader.readString();
+                                } else {
+                                    obj = decodeObject(reader, decoderContext, cla);
+                                }
+                                list.add(obj);
                             }
-                            list.add(obj);
-                        }
-                        reader.readEndArray();
-                        field.set(object, list);
-                        field.setAccessible(false);
-                        break;
-                    case DOUBLE:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, reader.readDouble());
-                        field.setAccessible(false);
-                        break;
-                    case STRING:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, reader.readString());
-                        field.setAccessible(false);
-                        break;
-                    case BOOLEAN:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, reader.readBoolean());
-                        field.setAccessible(false);
-                        break;
-                    case DATE_TIME:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, new Date(reader.readDateTime()));
-                        field.setAccessible(false);
-                        break;
-                    case INT32:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, reader.readInt32());
-                        field.setAccessible(false);
-                        break;
-                    case INT64:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, reader.readInt32());
-                        field.setAccessible(false);
-                        break;
-                    case OBJECT_ID:
-                        reader.readObjectId();
-                        break;
-                    case DOCUMENT:
-                        field = clazz.getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(object, decodeObject(reader, decoderContext, field.getType()));
-                        field.setAccessible(false);
-                        break;
+                            reader.readEndArray();
+                            value = list;
+                            break;
+                        case DOUBLE:
+                            value = reader.readDouble();
 
-                    default:
-                        break;
+                            break;
+                        case STRING:
+                            value = reader.readString();
+                            break;
+                        case BOOLEAN:
+                            value = reader.readBoolean();
+                            break;
+                        case DATE_TIME:
+                            value = new Date(reader.readDateTime());
+                            break;
+                        case INT32:
+                            value = reader.readInt32();
+                            break;
+                        case INT64:
+                            value = reader.readInt64();
+                            break;
+                        case OBJECT_ID:
+                            isDefault = true;
+                            reader.readObjectId();
+                            break;
+                        case DOCUMENT:
+                            value = decodeObject(reader, decoderContext, field.getType());
+                            break;
+                        default:
+                            isDefault = true;
+                            break;
+                    }
+                    if (!isDefault) { //默认则不执行设置，避免不必要的抛出异常
+                        field = clazz.getDeclaredField(name);
+                        field.setAccessible(true);
+                        field.set(object, value);
+                        field.setAccessible(false);
+                    }
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
                 }
+
 
             }
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
         reader.readEndDocument();
